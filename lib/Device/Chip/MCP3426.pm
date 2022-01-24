@@ -10,6 +10,31 @@ our $VERSION = 'v0.1.0';
 
 use constant PROTOCOL => 'I2C';
 
+=head1 NAME
+
+C<Device::Chip::MCP3426> - chip driver for MCP3426 family analog to
+digital converters
+
+=head1 SYNOPSIS
+
+    use Device::Chip::MCP3426;
+
+    my $chip = Device::Chip::MCP3426->new();
+    $chip->mount( ... )->get();
+
+    $chip->set_resolution(16);
+    $chip->set_gain(1);
+    $chip->set_channel(1);
+
+    my $voltage = $chip->read_adc_voltage;
+
+=head1 DESCRIPTION
+
+This class communicates with the MCP3426 family of analog to digital
+converters, including the MCP3427 and MCP3428.
+
+=cut
+
 sub I2C_options {
     my $self = shift;
     my %params = @_;
@@ -50,12 +75,27 @@ sub _send_config {
     $self->protocol->write(chr($config_reg));
 }
 
+=head1 METHODS
+
+=head2 set_channel($channel)
+
+Set the input channel to read. For the MCP2426 and MCP3427 this can be
+1 or 2; for the MCP3428 it can also be 3 or 4.
+
+=cut
+
 sub set_channel {
     my ($self, $channel) = @_;
 
     $self->{channel} = $channel;
     $self->_send_config;
 }
+
+=head2 set_resolution($resolution)
+
+Set the digitizing resolution in bits to 12, 14, or 16.
+
+=cut
 
 sub set_resolution {
     my ($self, $resolution) = @_;
@@ -64,12 +104,27 @@ sub set_resolution {
     $self->_send_config;
 }
 
+=head2 set_gain($gain)
+
+Set the PGA gain to 1, 2, 4, or 8.
+
+=cut
+
 sub set_gain {
     my ($self, $gain) = @_;
 
     $self->{gain} = $gain;
     $self->_send_config;
 }
+
+=head2
+
+Read the analog voltage on the selected channel and return the result
+in volts. This method will poll the ready bit until a new conversion
+is available before returning, or return C<undef> if no result is
+available after polling 50 times.
+
+=cut
 
 sub read_adc_voltage {
     my $self = shift;
@@ -116,5 +171,18 @@ sub read_adc_voltage {
 
     Future->done($adc_value);
 }
+
+=head1 AUTHOR
+
+Stephen Cavilia E<lt>sac@atomicradi.usE<gt>
+
+=head1 COPYRIGHT
+
+Copyright 2022 Stephen Cavilia
+
+This program is free software; you can redistribute it and/or
+modify it under the same terms as Perl itself.
+
+=cut
 
 1;
