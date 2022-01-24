@@ -1,0 +1,6 @@
+*~
+blib/
+*.old
+.build/
+Device-Chip-MCP3426-*/
+Device-Chip-MCP3426-*.tar.gz
